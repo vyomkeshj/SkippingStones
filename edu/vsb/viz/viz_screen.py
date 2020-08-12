@@ -3,6 +3,8 @@ import pygame
 from Box2D import b2Vec2
 from Box2D.b2 import world, polygonShape, staticBody, dynamicBody
 
+from edu.vsb.viz.collision_handler import collision_handler
+
 pygame.display.set_caption('SkippingStones')
 
 
@@ -14,7 +16,8 @@ class viz_screen:
         self.screen_width, self.screen_height = 640, 480
         self.screen = pygame.display.set_mode((self.screen_width, self.screen_height), 0, 32)
         self.clock = pygame.time.Clock()
-        self.world = world(gravity=(0, 0), doSleep=False)
+        self.world = world(gravity=(0, 0), contactListener=collision_handler(), doSleep=False)
+
 
         self.agent_target_pair = []  # agent is at index 0, target is at 1
         self.dynamic_obstacle_list = []
@@ -116,3 +119,9 @@ class viz_screen:
             # Flip the screen and try to keep at the target FPS
             pygame.display.flip()
             self.clock.tick(self.target_fps)
+
+    def begin_contact(self, contact):
+        fixture_a = contact.fixtureA
+        fixture_b = contact.fixtureB
+
+        body_a, body_b = fixture_a.body, fixture_b.body
