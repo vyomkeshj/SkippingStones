@@ -22,24 +22,24 @@ class viz_screen:
 
         self.colors = {
             staticBody: (255, 168, 255, 255),
-            dynamicBody: (127, 127, 255, 255),
+            dynamicBody: (127, 127, 255, 255)
         }
-        self.add_agent([13, 13])
 
         self.reached_target = False
         self.collision_detected = False
 
-    def add_agent(self, at_pos):
-        agent = self.world.CreateStaticBody(position=(at_pos[0], at_pos[1]),
+    def add_agent_and_target(self, agent_at_pos, target_at_pos):
+        self.agent_target_pair.clear()
+
+        agent = self.world.CreateStaticBody(position=(agent_at_pos[0], agent_at_pos[1]),
                                             shapes=polygonShape(box=(0.5, 0.5)))
         self.agent_target_pair.append(agent)
-        return agent
 
-    def add_target(self, at_pos):
-        target = self.world.CreateStaticBody(position=(at_pos[0], at_pos[1]),
+        target = self.world.CreateStaticBody(position=(target_at_pos[0], target_at_pos[1]),
                                              shapes=polygonShape(box=(0.5, 0.5)))
         self.agent_target_pair.append(target)
-        return target
+
+        return agent, target
 
     def get_agent_target_distance(self):
         distance = 2     # todo: implement this
@@ -48,7 +48,6 @@ class viz_screen:
     def update_agent_position(self, update_step):
         position = self.agent_target_pair[0].position
         self.agent_target_pair[0].position = b2Vec2(position[0] + update_step[0], position[1] - update_step[1])
-        print(position)
 
     def add_static_obstacles(self, static_obstacles):
         self.static_obstacle_list.append(static_obstacles)
@@ -68,19 +67,19 @@ class viz_screen:
     def initialise_walls(self):
         left_wall = self.world.CreateStaticBody(
             position=(0, 0),
-            shapes=polygonShape(box=(1, 50)),
+            shapes=polygonShape(box=(1, 24)),
         )
         bottom_wall = self.world.CreateStaticBody(
             position=(0, 0),
-            shapes=polygonShape(box=(50, 1)),
+            shapes=polygonShape(box=(32, 1)),
         )
         right_wall = self.world.CreateStaticBody(
-            position=(32, 10),
-            shapes=polygonShape(box=(1, 20)),
+            position=(32, 0),
+            shapes=polygonShape(box=(1, 24)),
         )
         top_wall = self.world.CreateStaticBody(
             position=(15, 24),
-            shapes=polygonShape(box=(20, 1)),
+            shapes=polygonShape(box=(24, 1)),
         )
         return [left_wall, bottom_wall, right_wall, top_wall]
 
