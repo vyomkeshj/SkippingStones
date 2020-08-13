@@ -13,7 +13,7 @@ class viz_controller:
         self.agent_target_generator = agent_target_generator(self.screen.world)
         self.reset_agent_and_target()
 
-        self.dynamic_obstacle_count = 4
+        self.dynamic_obstacle_count = 3
         x = threading.Thread(target=self.screen.run_world)
         x.start()
 

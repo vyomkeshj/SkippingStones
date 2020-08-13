@@ -8,7 +8,6 @@ class collision_handler(b2ContactListener):
     def BeginContact(self, contact):
         fixture_a = contact.fixtureA
         fixture_b = contact.fixtureB
-        print("collision detected")
 
         body_a, body_b = fixture_a.body, fixture_b.body
         #Todo: if the collision is between objects of interest, reset world

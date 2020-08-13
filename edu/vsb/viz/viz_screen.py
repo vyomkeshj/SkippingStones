@@ -18,7 +18,6 @@ class viz_screen:
         self.clock = pygame.time.Clock()
         self.world = world(gravity=(0, 0), contactListener=collision_handler(), doSleep=False)
 
-
         self.agent_target_pair = []  # agent is at index 0, target is at 1
         self.dynamic_obstacle_list = []
         self.static_obstacle_list = self.initialise_walls()
