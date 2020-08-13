@@ -48,8 +48,9 @@ class viz_screen:
         agent_metadata = object_meta(200)
         target_metadata = object_meta(300)
 
-        agent = self.world.CreateStaticBody(position=(agent_at_pos[0], agent_at_pos[1]),
-                                            shapes=polygonShape(box=(0.5, 0.5)))
+        agent = self.world.CreateDynamicBody(position=(agent_at_pos[0], agent_at_pos[1]))
+        agent.CreatePolygonFixture(box=(0.5, 0.5), density=1, friction=0.1, restitution=1)
+
         agent.userData = agent_metadata
         self.agent_target_pair.append(agent)
 
@@ -61,8 +62,10 @@ class viz_screen:
         return agent, target
 
     def update_agent_position(self, update_step):
-        position = self.agent_target_pair[0].position
-        self.agent_target_pair[0].position = b2Vec2(position[0] + update_step[0], position[1] - update_step[1])
+        agent_position = self.agent_target_pair[0].position
+        self.agent_target_pair[0].ApplyForce(force=b2Vec2(update_step[0], update_step[1]),
+                                             point=b2Vec2(agent_position[0], agent_position[1]),
+                                             wake=True)
 
     def get_agent_target_distance(self):
         position_agent = self.agent_target_pair[0].position

@@ -4,7 +4,6 @@ standard_codes = {
     300: "target",
     400: "static_obstacle",
     500: "dynamic_obstacle"
-
 }
 standard_colors = {
     "walls": (255, 168, 255, 255),

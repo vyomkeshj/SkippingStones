@@ -28,12 +28,12 @@ class viz_controller:
         y.start()
 
         while True:
-            time.sleep(1)
+            time.sleep(3)
             self.screen.apply_random_impulse()
             self.reset_agent_and_target()
 
     def reset_agent_and_target(self):
-        self.screen.reset_screen()
+        self.screen.reset_screen()      # deletes obstacles and adds walls
 
         self.generate_random_obstacles()
         self.screen.apply_random_impulse()
@@ -42,7 +42,8 @@ class viz_controller:
         self.agent_pos, self.target_pos = self.agent_target_generator.get_current_agent_target()
         self.generate_static_blockade()
 
-        self.screen.add_agent_and_target([self.agent_pos.position[0], self.agent_pos.position[1]], [self.target_pos.position[0], self.target_pos.position[1]])
+        self.screen.add_agent_and_target([self.agent_pos.position[0], self.agent_pos.position[1]],
+                                         [self.target_pos.position[0], self.target_pos.position[1]])
 
     def generate_static_blockade(self):
         agent_init = np.array([self.agent_pos.position[0], self.agent_pos.position[1]])
@@ -72,10 +73,11 @@ class viz_controller:
     # later, use this to control the agent from the agent
     def move_the_agent_random(self):
         while True:
-            time.sleep(0.5)
-            update_x = random.random()/2
-            update_y = random.random()/2
+            time.sleep(0.1)
+            update_x = random.random()*50
+            update_y = random.random()*50
             update_step = [update_x, update_y]
+
             self.screen.update_agent_position(update_step)
 
     def move_the_agent_gym(self, action):
