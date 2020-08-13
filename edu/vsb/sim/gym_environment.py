@@ -11,7 +11,7 @@ class gym_environment(gym.Env):
 
     def __init__(self):
         self.action_count = 0
-        self._max_episode_steps = 100
+        self._max_episode_steps = 300
 
         self.action_space = gym.spaces.Box(low=np.array([-10.0000, -10.0000]),
                                            high=np.array([10.0000, 10.0000]),
@@ -27,8 +27,9 @@ class gym_environment(gym.Env):
         image_matrix = self.environment.get_pixel_matrix_gym()
         reward_received = self.environment.get_reward_gym()
 
-        if has_collided is True:
+        if has_collided is True or self.action_count > self._max_episode_steps:
             self.environment.reset_agent_and_target()
+            self.action_count = 0
         return image_matrix, reward_received, done_status, {}
 
     def reset(self):
