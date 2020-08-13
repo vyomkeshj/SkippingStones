@@ -9,7 +9,7 @@ standard_colors = {
     "walls": (255, 168, 255, 255),
     "agent": (127, 127, 255, 255),
     "target": (255, 0, 0, 255),
-    "static_obstacle": (123, 168, 0, 255),
+    "static_obstacle": (123, 100, 33, 255),
     "dynamic_obstacle": (123, 255, 0, 255)
 }
 

@@ -1,6 +1,7 @@
 import gym
 import numpy as np
-import torch
+
+from edu.vsb.viz.viz_controller import viz_controller
 
 STATE_H = 480
 STATE_W = 640
@@ -12,39 +13,34 @@ class gym_environment(gym.Env):
         self.action_count = 0;
         self._max_episode_steps = 100
 
-        self.action_space = gym.spaces.Box(low=np.array([-4.0000, -4.0000, -4.0000, -4.0000, -4.0000, -4.0000]),
-                                           high=np.array([4.0000, 4.0000, 4.0000, 4.0000, 4.0000, 4.0000]),
+        self.action_space = gym.spaces.Box(low=np.array([-4.0000, -4.0000]),
+                                           high=np.array([4.0000, 4.0000]),
                                            dtype=np.float32)
 
-        self.observation_space = gym.spaces.Box(low=0, high=255, shape=(STATE_H, STATE_W, 3), dtype=np.uint8)
+        self.observation_space = gym.spaces.Box(low=0, high=255, shape=(STATE_W, STATE_H, 3), dtype=np.uint8)
+        self.environment = viz_controller()
 
     def step(self, action):
         # depending on the action size, append zeros to it for rest of the joint to signify static joints using np.pad
-        num_zeros_to_append = self.robot_mdp.dof - self.num_active_joints
-        action = np.pad(action, (0, num_zeros_to_append), 'constant')
+        print("action ", action)
 
-        # print("action done = ",action)
-        observation = self.robot_mdp.update_angle(action)
-        # return <angles and vec difference>, <reward>, <done_status>. The first n_dof elements are angles, next observation_not_angles_size are vec difference
-        observed_angles = observation[0:self.num_active_joints]
-        observed_difference = observation[self.robot_mdp.dof: (self.robot_mdp.dof + self.observation_not_angles_size)]
-        net_obs = torch.cat((observed_angles, observed_difference))
-        # print("net observation = ",net_obs)
-        reward_received = observation[self.single_observation_size]
-        done_status = observation[self.single_observation_size + 1]
-        # print("action = ", action, "observation = ", net_obs, "done =", done_status)
-        # print("stepping ", action)
-        return self.get_net_observation(net_obs, False), reward_received, done_status, {}
+        self.environment.move_the_agent_gym(action)
+        done_status, has_collided = self.environment.get_flags_done_collision_gym()
+        image_matrix = self.environment.get_pixel_matrix_gym()
+        reward_received = self.environment.get_reward_gym()
+
+        if has_collided is True:
+            self.environment.reset_agent_and_target()
+
+        print(" shape = ",image_matrix.shape)
+        return image_matrix, reward_received, done_status, {}
 
     def reset(self):
-        observation = self.robot_mdp.reset_robot()
+        print("resetting")
+        self.environment.reset_agent_and_target()
+        image_matrix = self.environment.get_pixel_matrix_gym()
 
-        observed_angles = observation[0:self.num_active_joints]
-
-        observed_difference = observation[self.robot_mdp.dof: (self.robot_mdp.dof + self.observation_not_angles_size)]
-        net_obs = torch.cat((observed_angles, observed_difference))
-
-        return self.get_net_observation(net_obs, True)  # on reset, the observation is only the state of the environment
+        return image_matrix  # on reset, the observation is only the state of the environment
 
     def render(self, mode='human'):
         pass

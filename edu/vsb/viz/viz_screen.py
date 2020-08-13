@@ -13,10 +13,10 @@ pygame.display.set_caption('SkippingStones')
 
 class viz_screen:
     def __init__(self):
-        self.ppm = 20.0  # pixels per meter
+        self.ppm = 20.0  # pixels per meter, make it 1 when training
         self.target_fps = 60
         self.time_step = 1.0 / self.target_fps
-        self.screen_width, self.screen_height = 640, 480
+        self.screen_width, self.screen_height = 640, 480 # make it 32, 24 while training
         self.screen = pygame.display.set_mode((self.screen_width, self.screen_height), 0, 32)
         self.clock = pygame.time.Clock()
         self.world = world(gravity=(0, 0), contactListener=collision_handler(self), doSleep=False)
@@ -24,11 +24,6 @@ class viz_screen:
         self.agent_target_pair = []  # agent is at index 0, target is at 1
         self.dynamic_obstacle_list = []
         self.static_obstacle_list = self.initialise_walls()
-
-        self.colors = {
-            staticBody: (255, 168, 255, 255),
-            dynamicBody: (127, 127, 255, 255)
-        }
 
         self.reached_target = False
         self.collision_detected = False
@@ -49,7 +44,7 @@ class viz_screen:
         target_metadata = object_meta(300)
 
         agent = self.world.CreateDynamicBody(position=(agent_at_pos[0], agent_at_pos[1]))
-        agent.CreatePolygonFixture(box=(0.5, 0.5), density=1, friction=0.1, restitution=1)
+        agent.CreatePolygonFixture(box=(0.5, 0.5), density=0.1, friction=0.1, restitution=1)
 
         agent.userData = agent_metadata
         self.agent_target_pair.append(agent)
@@ -63,7 +58,11 @@ class viz_screen:
 
     def update_agent_position(self, update_step):
         agent_position = self.agent_target_pair[0].position
-        self.agent_target_pair[0].ApplyForce(force=b2Vec2(update_step[0], update_step[1]),
+        f_x = update_step[0].item()
+        f_y = update_step[1].item()
+        print(type(f_x))
+        applied_force = b2Vec2(f_x, f_y)
+        self.agent_target_pair[0].ApplyForce(force=applied_force,
                                              point=b2Vec2(agent_position[0], agent_position[1]),
                                              wake=True)
 

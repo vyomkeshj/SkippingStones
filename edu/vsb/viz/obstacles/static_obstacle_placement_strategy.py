@@ -1,7 +1,6 @@
 import random
 
 
-# todo: block the los between agent and target with static blocks
 class static_obstacle_placement_strategy:
     def __init__(self, bounds=(3, 3, 20, 20)):
         self.num_obstacles = random.randint(2, 6)

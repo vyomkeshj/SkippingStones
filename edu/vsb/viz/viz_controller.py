@@ -24,26 +24,13 @@ class viz_controller:
         x = threading.Thread(target=self.screen.run_world)
         x.start()
 
-        y = threading.Thread(target=self.move_the_agent_random)
-        y.start()
+        # y = threading.Thread(target=self.move_the_agent_random)
+        # y.start()
 
-        while True:
-            time.sleep(3)
-            self.screen.apply_random_impulse()
-            self.reset_agent_and_target()
-
-    def reset_agent_and_target(self):
-        self.screen.reset_screen()      # deletes obstacles and adds walls
-
-        self.generate_random_obstacles()
-        self.screen.apply_random_impulse()
-
-        self.agent_target_generator.generate_agent_target_pair()
-        self.agent_pos, self.target_pos = self.agent_target_generator.get_current_agent_target()
-        self.generate_static_blockade()
-
-        self.screen.add_agent_and_target([self.agent_pos.position[0], self.agent_pos.position[1]],
-                                         [self.target_pos.position[0], self.target_pos.position[1]])
+        # while True:
+        #     time.sleep(3)
+        #     self.screen.apply_random_impulse()
+        #     self.reset_agent_and_target()
 
     def generate_static_blockade(self):
         agent_init = np.array([self.agent_pos.position[0], self.agent_pos.position[1]])
@@ -80,11 +67,32 @@ class viz_controller:
 
             self.screen.update_agent_position(update_step)
 
+    # methods for gym wrapper
+
     def move_the_agent_gym(self, action):
         self.screen.update_agent_position(action)
 
-    def get_target_distance_gym(self):
-        self.screen.get_agent_target_distance()
+    def get_reward_gym(self):
+        if self.screen.reached_target:
+            return 10
+        else:
+            return -1 - self.screen.get_agent_target_distance()
 
     def get_pixel_matrix_gym(self):
         return self.screen.get_image()
+
+    def get_flags_done_collision_gym(self):
+        return self.screen.get_flags_done_collision()
+
+    def reset_agent_and_target(self):
+        self.screen.reset_screen()      # deletes obstacles and adds walls
+
+        self.generate_random_obstacles()
+        self.screen.apply_random_impulse()
+
+        self.agent_target_generator.generate_agent_target_pair()
+        self.agent_pos, self.target_pos = self.agent_target_generator.get_current_agent_target()
+        self.generate_static_blockade()
+
+        self.screen.add_agent_and_target([self.agent_pos.position[0], self.agent_pos.position[1]],
+                                         [self.target_pos.position[0], self.target_pos.position[1]])
