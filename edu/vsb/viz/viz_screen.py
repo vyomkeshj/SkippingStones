@@ -6,6 +6,7 @@ from Box2D import b2Vec2
 from Box2D.b2 import world, polygonShape, staticBody, dynamicBody
 
 from edu.vsb.viz.collision_handler import collision_handler
+from edu.vsb.viz.obstacles.object_meta import object_meta, get_color_for_code
 
 pygame.display.set_caption('SkippingStones')
 
@@ -18,7 +19,7 @@ class viz_screen:
         self.screen_width, self.screen_height = 640, 480
         self.screen = pygame.display.set_mode((self.screen_width, self.screen_height), 0, 32)
         self.clock = pygame.time.Clock()
-        self.world = world(gravity=(0, 0), contactListener=collision_handler(), doSleep=False)
+        self.world = world(gravity=(0, 0), contactListener=collision_handler(self), doSleep=False)
 
         self.agent_target_pair = []  # agent is at index 0, target is at 1
         self.dynamic_obstacle_list = []
@@ -34,7 +35,7 @@ class viz_screen:
 
     def reset_screen(self):
         self.clock = pygame.time.Clock()
-        self.world = world(gravity=(0, 0), contactListener=collision_handler(), doSleep=False)
+        self.world = world(gravity=(0, 0), contactListener=collision_handler(self), doSleep=False)
 
         self.agent_target_pair = []  # agent is at index 0, target is at 1
         self.dynamic_obstacle_list = []
@@ -44,13 +45,17 @@ class viz_screen:
 
     def add_agent_and_target(self, agent_at_pos, target_at_pos):
         self.agent_target_pair.clear()
+        agent_metadata = object_meta(200)
+        target_metadata = object_meta(300)
 
         agent = self.world.CreateStaticBody(position=(agent_at_pos[0], agent_at_pos[1]),
                                             shapes=polygonShape(box=(0.5, 0.5)))
+        agent.userData = agent_metadata
         self.agent_target_pair.append(agent)
 
         target = self.world.CreateStaticBody(position=(target_at_pos[0], target_at_pos[1]),
                                              shapes=polygonShape(box=(0.5, 0.5)))
+        target.userData = target_metadata
         self.agent_target_pair.append(target)
 
         return agent, target
@@ -72,18 +77,24 @@ class viz_screen:
         self.static_obstacle_list.append(static_obstacles)
 
     def add_dynamic_obstacles(self, dynamic_obstacle_tuple):
+        object_metadata = object_meta(500)
         for (pos_x, pos_y, angle) in dynamic_obstacle_tuple:
             temp_body = self.world.CreateDynamicBody(position=(pos_x, pos_y), angle=angle)
             temp_body.CreatePolygonFixture(box=(1, 1), density=1, friction=0.1, restitution=1)
+            temp_body.userData = object_metadata
             self.dynamic_obstacle_list.append(temp_body)
 
-    def apply_impulse(self):
+    def apply_random_impulse(self):
         for body in self.dynamic_obstacle_list:
             impulse_x = random.random() * 15
             impulse_y = random.random() * 15
-            body.ApplyLinearImpulse(impulse=(impulse_x, impulse_y), point=(10, 15), wake=True)
+
+            axis_x = random.random() * 20
+            axis_y = random.random() * 30
+            body.ApplyLinearImpulse(impulse=(impulse_x, impulse_y), point=(axis_x, axis_y), wake=True)
 
     def initialise_walls(self):
+        object_metadata = object_meta(100)
         left_wall = self.world.CreateStaticBody(
             position=(0, 0),
             shapes=polygonShape(box=(1, 24)),
@@ -100,6 +111,11 @@ class viz_screen:
             position=(15, 24),
             shapes=polygonShape(box=(24, 1)),
         )
+        left_wall.userData = object_metadata
+        bottom_wall.userData = object_metadata
+        right_wall.userData = object_metadata
+        top_wall.userData = object_metadata
+
         return [left_wall, bottom_wall, right_wall, top_wall]
 
     def run_world(self):
@@ -111,33 +127,44 @@ class viz_screen:
                 # The body gives us the position and angle of its shapes
                 for fixture in body.fixtures:
                     shape = fixture.shape
-                    vertices = [(body.transform * v) * self.ppm for v in shape.vertices]
-                    vertices = [(v[0], self.screen_height - v[1]) for v in vertices]
-                    pygame.draw.polygon(self.screen, self.colors[body.type], vertices)
+                    if shape is not None:
+                        vertices = [(body.transform * v) * self.ppm for v in shape.vertices]
+                        vertices = [(v[0], self.screen_height - v[1]) for v in vertices]
+                        pygame.draw.polygon(self.screen, self.get_color_for_object(body), vertices)
 
             for body in self.dynamic_obstacle_list:
                 # The body gives us the position and angle of its shapes
                 for fixture in body.fixtures:
                     shape = fixture.shape
-                    vertices = [(body.transform * v) * self.ppm for v in shape.vertices]
-                    vertices = [(v[0], self.screen_height - v[1]) for v in vertices]
-                    pygame.draw.polygon(self.screen, self.colors[body.type], vertices)
+                    if shape is not None:
+                        vertices = [(body.transform * v) * self.ppm for v in shape.vertices]
+                        vertices = [(v[0], self.screen_height - v[1]) for v in vertices]
+                        pygame.draw.polygon(self.screen, self.get_color_for_object(body), vertices)
+                    # pygame.draw.polygon(self.screen, self.colors[body.type], vertices)
 
             for body in self.agent_target_pair:
                 # The body gives us the position and angle of its shapes
                 for fixture in body.fixtures:
                     shape = fixture.shape
-                    vertices = [(body.transform * v) * self.ppm for v in shape.vertices]
-                    vertices = [(v[0], self.screen_height - v[1]) for v in vertices]
-                    pygame.draw.polygon(self.screen, self.colors[body.type], vertices)
+                    if shape is not None:
+                        vertices = [(body.transform * v) * self.ppm for v in shape.vertices]
+                        vertices = [(v[0], self.screen_height - v[1]) for v in vertices]
+                        pygame.draw.polygon(self.screen, self.get_color_for_object(body), vertices)
+                        # pygame.draw.polygon(self.screen, self.colors[body.type], vertices)
 
             self.world.Step(self.time_step, 10, 10)
             # Flip the screen and try to keep at the target FPS
             pygame.display.flip()
+            self.get_image()
             self.clock.tick(self.target_fps)
 
-    def begin_contact(self, contact):
-        fixture_a = contact.fixtureA
-        fixture_b = contact.fixtureB
+    def get_color_for_object(self, box_object):
+        return get_color_for_code(box_object.userData.get_obj_code())
 
-        body_a, body_b = fixture_a.body, fixture_b.body
+    def get_image(self):
+        pixels_2d = pygame.surfarray.array3d(self.screen)
+        # pygame.image.save(self.screen, "screenshot.jpg")
+        return pixels_2d
+
+    def get_flags_done_collision(self):
+        return self.reached_target, self.collision_detected

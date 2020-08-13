@@ -5,6 +5,7 @@ import time
 import numpy as np
 
 from edu.vsb.viz.agent_target_generator import agent_target_generator
+from edu.vsb.viz.obstacles.object_meta import object_meta
 from edu.vsb.viz.obstacles.static_obstacle_placement_strategy import static_obstacle_placement_strategy
 from edu.vsb.viz.viz_screen import viz_screen
 from Box2D.b2 import polygonShape
@@ -23,24 +24,19 @@ class viz_controller:
         x = threading.Thread(target=self.screen.run_world)
         x.start()
 
-        y = threading.Thread(target=self.move_the_agent)
+        y = threading.Thread(target=self.move_the_agent_random)
         y.start()
 
         while True:
-            time.sleep(5)
-            if self.dynamic_obstacle_count > 0:
-                self.dynamic_obstacle_count = self.dynamic_obstacle_count-1
-            self.screen.apply_impulse()
+            time.sleep(1)
+            self.screen.apply_random_impulse()
             self.reset_agent_and_target()
 
     def reset_agent_and_target(self):
         self.screen.reset_screen()
 
-        self.screen.add_dynamic_obstacles([(14, 20, 17)])
-        self.screen.add_dynamic_obstacles([(11, 17, 23)])
-
         self.generate_random_obstacles()
-        self.screen.apply_impulse()
+        self.screen.apply_random_impulse()
 
         self.agent_target_generator.generate_agent_target_pair()
         self.agent_pos, self.target_pos = self.agent_target_generator.get_current_agent_target()
@@ -59,6 +55,8 @@ class viz_controller:
                 shapes=polygonShape(box=(obstacle[1], obstacle[1])),
                 angle=obstacle[2]
             )
+            object_metadata = object_meta(400)
+            item.userData = object_metadata
             self.screen.add_static_obstacles(item)
 
     def generate_random_obstacles(self):
@@ -72,7 +70,7 @@ class viz_controller:
             gen_cnt = gen_cnt-1
 
     # later, use this to control the agent from the agent
-    def move_the_agent(self):
+    def move_the_agent_random(self):
         while True:
             time.sleep(0.5)
             update_x = random.random()/2
@@ -80,3 +78,11 @@ class viz_controller:
             update_step = [update_x, update_y]
             self.screen.update_agent_position(update_step)
 
+    def move_the_agent_gym(self, action):
+        self.screen.update_agent_position(action)
+
+    def get_target_distance_gym(self):
+        self.screen.get_agent_target_distance()
+
+    def get_pixel_matrix_gym(self):
+        return None

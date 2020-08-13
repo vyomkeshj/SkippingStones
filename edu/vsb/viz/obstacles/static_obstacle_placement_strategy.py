@@ -1,4 +1,3 @@
-import numpy as np
 import random
 
 
@@ -12,12 +11,8 @@ class static_obstacle_placement_strategy:
         self.mean_spacing = 4
 
     def get_obstacles(self, agent_init_pos, target_init_pos):
-        print("generating obstakles to takle babe")
-        # print("Number of obstacles: ", self.num_obstacles)
-
+        # print("generating obstakles to takle babe")
         width_of_agent = 1
-        y_range = 1
-
         ret_list = []
 
         for i in range(self.num_obstacles):
@@ -36,13 +31,9 @@ class static_obstacle_placement_strategy:
 
             else:
                 y = random.uniform(min(y1, y2) + width_of_agent, max(y1, y2) - width_of_agent)
-
             l = random.uniform(self.obstacle_min_size, self.obstacle_max_size)
-
             theta = random.uniform(0, 90)
-
             # print(x, y, l, theta)
             ret_list.append([(x, y), l, theta])
-
         # print(ret_list)
         return (ret_list)
