@@ -166,7 +166,6 @@ class viz_screen:
 
     def get_image(self):
         pixels_2d = pygame.surfarray.array3d(self.screen)
-        # pygame.image.save(self.screen, "screenshot.jpg")
         return pixels_2d
 
     def get_flags_done_collision(self):

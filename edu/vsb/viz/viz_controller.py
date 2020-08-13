@@ -87,4 +87,4 @@ class viz_controller:
         self.screen.get_agent_target_distance()
 
     def get_pixel_matrix_gym(self):
-        return None
+        return self.screen.get_image()
