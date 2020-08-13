@@ -1,5 +1,7 @@
 import random
 import pygame
+import numpy as np
+
 from Box2D import b2Vec2
 from Box2D.b2 import world, polygonShape, staticBody, dynamicBody
 
@@ -30,6 +32,16 @@ class viz_screen:
         self.reached_target = False
         self.collision_detected = False
 
+    def reset_screen(self):
+        self.clock = pygame.time.Clock()
+        self.world = world(gravity=(0, 0), contactListener=collision_handler(), doSleep=False)
+
+        self.agent_target_pair = []  # agent is at index 0, target is at 1
+        self.dynamic_obstacle_list = []
+        self.static_obstacle_list = self.initialise_walls()
+        self.reached_target = False
+        self.collision_detected = False
+
     def add_agent_and_target(self, agent_at_pos, target_at_pos):
         self.agent_target_pair.clear()
 
@@ -43,13 +55,18 @@ class viz_screen:
 
         return agent, target
 
-    def get_agent_target_distance(self):
-        distance = 2     # todo: implement this
-        return distance
-
     def update_agent_position(self, update_step):
         position = self.agent_target_pair[0].position
         self.agent_target_pair[0].position = b2Vec2(position[0] + update_step[0], position[1] - update_step[1])
+
+    def get_agent_target_distance(self):
+        position_agent = self.agent_target_pair[0].position
+        position_target = self.agent_target_pair[1].position
+        position_agent = np.array((position_agent[0], position_agent[1]))
+        position_target = np.array((position_target[0], position_target[1]))
+
+        dist = np.linalg.norm(position_agent - position_target)
+        return dist
 
     def add_static_obstacles(self, static_obstacles):
         self.static_obstacle_list.append(static_obstacles)
