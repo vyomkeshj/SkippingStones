@@ -60,7 +60,6 @@ class viz_screen:
         agent_position = self.agent_target_pair[0].position
         f_x = update_step[0].item()
         f_y = update_step[1].item()
-        print(type(f_x))
         applied_force = b2Vec2(f_x, f_y)
         self.agent_target_pair[0].ApplyForce(force=applied_force,
                                              point=b2Vec2(agent_position[0], agent_position[1]),

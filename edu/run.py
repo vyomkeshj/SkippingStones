@@ -23,7 +23,6 @@ if __name__ == "__main__":
     policy_freq = 2
 
     env = gym_environment()
-    # env = java_environment()
 
     # Set seeds
     env.seed(seed)
@@ -31,7 +30,7 @@ if __name__ == "__main__":
     np.random.seed(seed)
 
     state_dim = env.observation_space.shape
-    state_dim_flat = 640*460*3
+    state_dim_flat = 640*480*3
 
     action_dim = env.action_space.shape[0]
     max_action = float(env.action_space.high[0])
@@ -51,9 +50,9 @@ if __name__ == "__main__":
         kwargs["noise_clip"] = noise_clip * max_action
         kwargs["policy_freq"] = policy_freq
         policy = TD3(**kwargs)
-        #policy.load("/content/drive/My Drive/Colab Notebooks/models/18_orientation_pos/model-fastrobot")
+        # policy.load("/content/drive/My Drive/Colab Notebooks/models/18_orientation_pos/model-fastrobot")
 
-    replay_buffer = ReplayBuffer(state_dim, action_dim)
+    replay_buffer = ReplayBuffer(state_dim_flat, action_dim)
 
     # Evaluate untrained policy
     # evaluations = [eval_policy(policy, env, seed)]
@@ -106,8 +105,6 @@ if __name__ == "__main__":
             # Reset environment
             start_time = time.time()
             state, done = env.reset(), False
-            starting_point = env.robot_mdp.get_robot_init_tcp()
-
             episode_reward = 0
             episode_timesteps = 0
             episode_num += 1

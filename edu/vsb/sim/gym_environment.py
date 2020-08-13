@@ -10,11 +10,11 @@ STATE_W = 640
 class gym_environment(gym.Env):
 
     def __init__(self):
-        self.action_count = 0;
+        self.action_count = 0
         self._max_episode_steps = 100
 
-        self.action_space = gym.spaces.Box(low=np.array([-4.0000, -4.0000]),
-                                           high=np.array([4.0000, 4.0000]),
+        self.action_space = gym.spaces.Box(low=np.array([-10.0000, -10.0000]),
+                                           high=np.array([10.0000, 10.0000]),
                                            dtype=np.float32)
 
         self.observation_space = gym.spaces.Box(low=0, high=255, shape=(STATE_W, STATE_H, 3), dtype=np.uint8)
@@ -22,8 +22,6 @@ class gym_environment(gym.Env):
 
     def step(self, action):
         # depending on the action size, append zeros to it for rest of the joint to signify static joints using np.pad
-        print("action ", action)
-
         self.environment.move_the_agent_gym(action)
         done_status, has_collided = self.environment.get_flags_done_collision_gym()
         image_matrix = self.environment.get_pixel_matrix_gym()
@@ -31,12 +29,9 @@ class gym_environment(gym.Env):
 
         if has_collided is True:
             self.environment.reset_agent_and_target()
-
-        print(" shape = ",image_matrix.shape)
         return image_matrix, reward_received, done_status, {}
 
     def reset(self):
-        print("resetting")
         self.environment.reset_agent_and_target()
         image_matrix = self.environment.get_pixel_matrix_gym()
 
