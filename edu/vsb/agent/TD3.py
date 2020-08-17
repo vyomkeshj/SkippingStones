@@ -18,7 +18,7 @@ class TD3(object):
             discount=0.99,
             tau=0.005,
             policy_noise=0.2,
-            noise_clip=0.5,
+            noise_clip=0.7,
             policy_freq=2
     ):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

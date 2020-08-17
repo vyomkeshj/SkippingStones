@@ -9,6 +9,10 @@ from edu.vsb.sim.gym_environment import gym_environment
 
 if __name__ == "__main__":
 
+    STATE_H = 24
+    STATE_W = 32
+    CHANNELS = 3
+
     policy = "TD3"
     seed = 0
     start_timesteps = 30e3
@@ -30,7 +34,7 @@ if __name__ == "__main__":
     np.random.seed(seed)
 
     state_dim = env.observation_space.shape
-    state_dim_flat = 640*480*3
+    state_dim_flat = STATE_H*STATE_W*CHANNELS
 
     action_dim = env.action_space.shape[0]
     max_action = float(env.action_space.high[0])
@@ -50,7 +54,7 @@ if __name__ == "__main__":
         kwargs["noise_clip"] = noise_clip * max_action
         kwargs["policy_freq"] = policy_freq
         policy = TD3(**kwargs)
-        # policy.load("/content/drive/My Drive/Colab Notebooks/models/18_orientation_pos/model-fastrobot")
+        #policy.load("./model-fastrobot")
 
     replay_buffer = ReplayBuffer(state_dim_flat, action_dim)
 

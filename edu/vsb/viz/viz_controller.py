@@ -73,10 +73,13 @@ class viz_controller:
         self.screen.update_agent_position(action)
 
     def get_reward_gym(self):
+        done_status, collision_status = self.screen.get_flags_done_collision()
         if self.screen.reached_target:
             return 10
+        elif collision_status:
+            return -50
         else:
-            return -1 - self.screen.get_agent_target_distance()
+            return -1 - self.screen.get_agent_target_distance()/20
 
     def get_pixel_matrix_gym(self):
         return self.screen.get_image()

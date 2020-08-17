@@ -32,9 +32,9 @@ class ReplayBuffer(object):
         ind = np.random.randint(0, self.size, size=batch_size)
 
         return (
-            torch.FloatTensor(self.state[ind]).flatten().to(self.device),
+            torch.FloatTensor(self.state[ind]).to(self.device),
             torch.FloatTensor(self.action[ind]).to(self.device),
-            torch.FloatTensor(self.next_state[ind]).flatten().to(self.device).to(self.device),
+            torch.FloatTensor(self.next_state[ind]).to(self.device).to(self.device),  #fixme: last error
             torch.FloatTensor(self.reward[ind]).to(self.device),
             torch.FloatTensor(self.not_done[ind]).to(self.device)
         )

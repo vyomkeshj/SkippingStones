@@ -9,14 +9,17 @@ from edu.vsb.viz.collision_handler import collision_handler
 from edu.vsb.viz.obstacles.object_meta import object_meta, get_color_for_code
 
 pygame.display.set_caption('SkippingStones')
+STATE_H = 24
+STATE_W = 32
+CHANNELS = 3
 
 
 class viz_screen:
     def __init__(self):
-        self.ppm = 20.0  # pixels per meter, make it 1 when training
+        self.ppm = 1.0  # pixels per meter, make it 1 when training
         self.target_fps = 60
         self.time_step = 1.0 / self.target_fps
-        self.screen_width, self.screen_height = 640, 480 # make it 32, 24 while training
+        self.screen_width, self.screen_height = STATE_W, STATE_H # make it 32, 24 while training
         self.screen = pygame.display.set_mode((self.screen_width, self.screen_height), 0, 32)
         self.clock = pygame.time.Clock()
         self.world = world(gravity=(0, 0), contactListener=collision_handler(self), doSleep=False)
@@ -163,8 +166,8 @@ class viz_screen:
         return get_color_for_code(box_object.userData.get_obj_code())
 
     def get_image(self):
-        pixels_2d = pygame.surfarray.array3d(self.screen)
-        return pixels_2d
+        pixels_3d = pygame.surfarray.array3d(self.screen)
+        return pixels_3d
 
     def get_flags_done_collision(self):
         return self.reached_target, self.collision_detected

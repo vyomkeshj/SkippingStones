@@ -3,8 +3,9 @@ import numpy as np
 
 from edu.vsb.viz.viz_controller import viz_controller
 
-STATE_H = 480
-STATE_W = 640
+STATE_H = 24
+STATE_W = 32
+CHANNELS = 3
 
 
 class gym_environment(gym.Env):
@@ -13,11 +14,11 @@ class gym_environment(gym.Env):
         self.action_count = 0
         self._max_episode_steps = 300
 
-        self.action_space = gym.spaces.Box(low=np.array([-10.0000, -10.0000]),
-                                           high=np.array([10.0000, 10.0000]),
+        self.action_space = gym.spaces.Box(low=np.array([-4.0000, -4.0000]),
+                                           high=np.array([4.0000, 4.0000]),
                                            dtype=np.float32)
 
-        self.observation_space = gym.spaces.Box(low=0, high=255, shape=(STATE_W, STATE_H, 3), dtype=np.uint8)
+        self.observation_space = gym.spaces.Box(low=0, high=255, shape=(STATE_W, STATE_H, CHANNELS), dtype=np.uint8)
         self.environment = viz_controller()
 
     def step(self, action):
