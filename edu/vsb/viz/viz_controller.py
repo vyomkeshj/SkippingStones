@@ -78,9 +78,9 @@ class viz_controller:
         done_status, collision_status = self.screen.get_flags_done_collision()
         # print("state array = ", self.get_state_array())
         if self.screen.reached_target:
-            return 70
+            return 200
         elif collision_status:
-            return -50
+            return -300
         else:
             return -1 - self.screen.get_agent_target_distance() / 30
 
@@ -117,3 +117,6 @@ class viz_controller:
 
         self.screen.add_agent_and_target([self.agent_pos.position[0], self.agent_pos.position[1]],
                                          [self.target_pos.position[0], self.target_pos.position[1]])
+
+    def change_game_background_intensity(self, q_val):
+        self.screen.change_game_background_intensity(q_val)

@@ -83,6 +83,9 @@ if __name__ == "__main__":
         # Perform action\
         next_state, reward, done, _ = env.step(action)
 
+        # state_q = torch.from_numpy(state).float()
+        # action_q = torch.from_numpy(action).float()
+        # env.environment.change_game_background_intensity(policy.get_q(state_q, action_q))
         done_bool = float(done) if episode_timesteps < env._max_episode_steps else 0
 
         epoch_end = False if episode_timesteps < env._max_episode_steps else True
