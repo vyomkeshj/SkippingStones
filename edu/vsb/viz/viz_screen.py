@@ -3,21 +3,21 @@ import pygame
 import numpy as np
 
 from Box2D import b2Vec2
-from Box2D.b2 import world, polygonShape, staticBody, dynamicBody
+from Box2D.b2 import world, polygonShape
 
 from edu.vsb.viz.collision_handler import collision_handler
 from edu.vsb.viz.obstacles.object_meta import object_meta, get_color_for_code
+from edu.constants import STATE_H
+from edu.constants import STATE_W
+from edu.constants import STATE_PPM
 
 pygame.display.set_caption('SkippingStones')
-STATE_H = 24
-STATE_W = 32
-CHANNELS = 3
 
 
 class viz_screen:
     def __init__(self):
-        self.ppm = 1.0  # pixels per meter, make it 1 when training
-        self.target_fps = 60
+        self.ppm = STATE_PPM  # pixels per meter, make it 1 when training
+        self.target_fps = 20
         self.time_step = 1.0 / self.target_fps
         self.screen_width, self.screen_height = STATE_W, STATE_H # make it 32, 24 while training
         self.screen = pygame.display.set_mode((self.screen_width, self.screen_height), 0, 32)
@@ -64,9 +64,9 @@ class viz_screen:
         f_x = update_step[0].item()
         f_y = update_step[1].item()
         applied_force = b2Vec2(f_x, f_y)
-        self.agent_target_pair[0].ApplyForce(force=applied_force,
-                                             point=b2Vec2(agent_position[0], agent_position[1]),
-                                             wake=True)
+        self.agent_target_pair[0].ApplyLinearImpulse(impulse=applied_force,
+                                                     point=b2Vec2(agent_position[0], agent_position[1]),
+                                                     wake=True)
 
     def get_agent_target_distance(self):
         position_agent = self.agent_target_pair[0].position
@@ -76,6 +76,13 @@ class viz_screen:
 
         dist = np.linalg.norm(position_agent - position_target)
         return dist
+
+    def get_dynamic_obstacle_states(self):
+        ret_array = np.array([])
+        for obstacle in self.dynamic_obstacle_list:
+            obs_list = np.array([obstacle.position[0], obstacle.position[1], obstacle.angle])
+            ret_array = np.concatenate((ret_array, obs_list), axis=None)
+        return ret_array
 
     def add_static_obstacles(self, static_obstacles):
         self.static_obstacle_list.append(static_obstacles)
@@ -166,6 +173,13 @@ class viz_screen:
         return get_color_for_code(box_object.userData.get_obj_code())
 
     def get_image(self):
+        pixels_3d = pygame.surfarray.array3d(self.screen)
+        return pixels_3d
+
+    def get_state(self):
+        """ static_obstacle_pos, static_obstacle_dim, static_obstacle_pos, dyn_obstacle_pos_1, dyn_obstacle_pos_2,
+        dyn_obstacle_pos_3, agent_pos, target_pos """
+
         pixels_3d = pygame.surfarray.array3d(self.screen)
         return pixels_3d
 

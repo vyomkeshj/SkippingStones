@@ -3,10 +3,10 @@ import random
 
 class static_obstacle_placement_strategy:
     def __init__(self, bounds=(3, 3, 20, 20)):
-        self.num_obstacles = random.randint(2, 6)
+        self.num_obstacles = 1    # random.randint(2, 6)
         self.generation_bounds = bounds
-        self.obstacle_min_size = 0.25
-        self.obstacle_max_size = 0.5
+        self.obstacle_min_size = 0.5
+        self.obstacle_max_size = 1
         self.mean_spacing = 4
 
     def get_obstacles(self, agent_init_pos, target_init_pos):

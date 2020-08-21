@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="0980cba9-99ec-4e46-952c-da1be9ef5c24" name="RemoteLabtop" url="http://158.196.73.139">
+        <fileTransfer host="158.196.73.139" port="22" rootFolder="/home/rob-ot/PycharmProjects" accessType="SFTP">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
