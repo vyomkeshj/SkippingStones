@@ -44,6 +44,11 @@ class TD3(object):
         state = torch.FloatTensor(state.reshape(1, -1)).to(device)
         return self.actor(state).cpu().data.numpy().flatten()
 
+    def get_q(self, state, action):
+        target_q1, target_q2 = self.critic_target(state, action)
+        target_q = torch.min(target_q1, target_q2)
+        return target_q
+
     def train(self, replay_buffer, batch_size=100):
         self.total_it += 1
 

@@ -185,3 +185,8 @@ class viz_screen:
 
     def get_flags_done_collision(self):
         return self.reached_target, self.collision_detected
+
+    def change_game_background_intensity(self, q_val):
+        current_color = (q_val/2, 0, 0)
+        self.screen.fill(current_color)
+        pygame.display.update()
