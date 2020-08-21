@@ -6,16 +6,15 @@ import torch
 
 from edu.vsb.agent import ReplayBuffer, TD3
 from edu.vsb.sim.gym_environment import gym_environment
+from edu.constants import STATE_W
+from edu.constants import STATE_H
+from edu.constants import HISTORY
 
 if __name__ == "__main__":
 
-    STATE_H = 24
-    STATE_W = 32
-    CHANNELS = 3
-
     policy = "TD3"
     seed = 0
-    start_timesteps = 30e3
+    start_timesteps = 18e3
     eval_freq = 5e3
     max_timesteps = 40e5
     expl_noise = 0.1
@@ -33,14 +32,13 @@ if __name__ == "__main__":
     torch.manual_seed(seed)
     np.random.seed(seed)
 
-    state_dim = env.observation_space.shape
-    state_dim_flat = STATE_H*STATE_W*CHANNELS
+    state_dim = 17*HISTORY
 
     action_dim = env.action_space.shape[0]
     max_action = float(env.action_space.high[0])
 
     kwargs = {
-        "state_dim": state_dim_flat,
+        "state_dim": state_dim,
         "action_dim": action_dim,
         "max_action": max_action,
         "discount": discount,
@@ -54,9 +52,9 @@ if __name__ == "__main__":
         kwargs["noise_clip"] = noise_clip * max_action
         kwargs["policy_freq"] = policy_freq
         policy = TD3(**kwargs)
-        #policy.load("./model-fastrobot")
+        policy.load("./model-fastrobot")
 
-    replay_buffer = ReplayBuffer(state_dim_flat, action_dim)
+    replay_buffer = ReplayBuffer(state_dim, action_dim)
 
     # Evaluate untrained policy
     # evaluations = [eval_policy(policy, env, seed)]
@@ -91,7 +89,6 @@ if __name__ == "__main__":
         # Store data in replay buffer,
         # todo do the HER modification here
         # print("adding state to replay buffer", state)
-
         replay_buffer.add(state, action, next_state, reward, done_bool)  # goes to temp buffer
 
         state = next_state
