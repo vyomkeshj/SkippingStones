@@ -16,6 +16,7 @@ pygame.display.set_caption('SkippingStones')
 
 class viz_screen:
     def __init__(self):
+        pygame.init()
         self.ppm = STATE_PPM  # pixels per meter, make it 1 when training
         self.target_fps = 20
         self.time_step = 1.0 / self.target_fps
