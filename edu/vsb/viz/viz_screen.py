@@ -20,7 +20,7 @@ class viz_screen:
         self.ppm = STATE_PPM  # pixels per meter, make it 1 when training
         self.target_fps = 20
         self.time_step = 1.0 / self.target_fps
-        self.screen_width, self.screen_height = STATE_W, STATE_H # make it 32, 24 while training
+        self.screen_width, self.screen_height = STATE_W, STATE_H  # make it 32, 24 while training
         self.screen = pygame.display.set_mode((self.screen_width, self.screen_height), 0, 32)
         self.clock = pygame.time.Clock()
         self.world = world(gravity=(0, 0), contactListener=collision_handler(self), doSleep=False)
@@ -28,6 +28,7 @@ class viz_screen:
         self.agent_target_pair = []  # agent is at index 0, target is at 1
         self.dynamic_obstacle_list = []
         self.static_obstacle_list = self.initialise_walls()
+        self.is_update_required = True
 
         self.reached_target = False
         self.collision_detected = False
@@ -41,6 +42,7 @@ class viz_screen:
         self.static_obstacle_list = self.initialise_walls()
         self.reached_target = False
         self.collision_detected = False
+        self.is_update_required = True
 
     def add_agent_and_target(self, agent_at_pos, target_at_pos):
         self.agent_target_pair.clear()
@@ -57,7 +59,7 @@ class viz_screen:
                                              shapes=polygonShape(box=(0.5, 0.5)))
         target.userData = target_metadata
         self.agent_target_pair.append(target)
-
+        self.is_update_required = True
         return agent, target
 
     def update_agent_position(self, update_step):
@@ -68,6 +70,7 @@ class viz_screen:
         self.agent_target_pair[0].ApplyLinearImpulse(impulse=applied_force,
                                                      point=b2Vec2(agent_position[0], agent_position[1]),
                                                      wake=True)
+        self.is_update_required = True
 
     def get_agent_target_distance(self):
         position_agent = self.agent_target_pair[0].position
@@ -87,6 +90,7 @@ class viz_screen:
 
     def add_static_obstacles(self, static_obstacles):
         self.static_obstacle_list.append(static_obstacles)
+        self.is_update_required = True
 
     def add_dynamic_obstacles(self, dynamic_obstacle_tuple):
         object_metadata = object_meta(500)
@@ -95,6 +99,7 @@ class viz_screen:
             temp_body.CreatePolygonFixture(box=(1, 1), density=1, friction=0.1, restitution=1)
             temp_body.userData = object_metadata
             self.dynamic_obstacle_list.append(temp_body)
+        self.is_update_required = True
 
     def apply_random_impulse(self):
         for body in self.dynamic_obstacle_list:
@@ -104,6 +109,7 @@ class viz_screen:
             axis_x = random.random() * 20
             axis_y = random.random() * 30
             body.ApplyLinearImpulse(impulse=(impulse_x, impulse_y), point=(axis_x, axis_y), wake=True)
+        self.is_update_required = True
 
     def initialise_walls(self):
         object_metadata = object_meta(100)
@@ -123,6 +129,7 @@ class viz_screen:
             position=(15, 24),
             shapes=polygonShape(box=(24, 1)),
         )
+        self.is_update_required = True
         left_wall.userData = object_metadata
         bottom_wall.userData = object_metadata
         right_wall.userData = object_metadata
@@ -133,42 +140,46 @@ class viz_screen:
     def run_world(self):
         running = True
         while running:
-            self.screen.fill((0, 0, 0, 0))
-            # Draw the world
-            for body in self.static_obstacle_list:
-                # The body gives us the position and angle of its shapes
-                for fixture in body.fixtures:
-                    shape = fixture.shape
-                    if shape is not None:
-                        vertices = [(body.transform * v) * self.ppm for v in shape.vertices]
-                        vertices = [(v[0], self.screen_height - v[1]) for v in vertices]
-                        pygame.draw.polygon(self.screen, self.get_color_for_object(body), vertices)
+            if self.is_update_required and not self.collision_detected:
+                self.is_update_required = False
+                self.screen.fill((0, 0, 0, 0))
+                # Draw the world
+                for body in self.static_obstacle_list:
+                    # The body gives us the position and angle of its shapes
+                    for fixture in body.fixtures:
+                        shape = fixture.shape
+                        if shape is not None:
+                            vertices = [(body.transform * v) * self.ppm for v in shape.vertices]
+                            vertices = [(v[0], self.screen_height - v[1]) for v in vertices]
+                            pygame.draw.polygon(self.screen, self.get_color_for_object(body), vertices)
 
-            for body in self.dynamic_obstacle_list:
-                # The body gives us the position and angle of its shapes
-                for fixture in body.fixtures:
-                    shape = fixture.shape
-                    if shape is not None:
-                        vertices = [(body.transform * v) * self.ppm for v in shape.vertices]
-                        vertices = [(v[0], self.screen_height - v[1]) for v in vertices]
-                        pygame.draw.polygon(self.screen, self.get_color_for_object(body), vertices)
-                    # pygame.draw.polygon(self.screen, self.colors[body.type], vertices)
-
-            for body in self.agent_target_pair:
-                # The body gives us the position and angle of its shapes
-                for fixture in body.fixtures:
-                    shape = fixture.shape
-                    if shape is not None:
-                        vertices = [(body.transform * v) * self.ppm for v in shape.vertices]
-                        vertices = [(v[0], self.screen_height - v[1]) for v in vertices]
-                        pygame.draw.polygon(self.screen, self.get_color_for_object(body), vertices)
+                for body in self.dynamic_obstacle_list:
+                    # The body gives us the position and angle of its shapes
+                    for fixture in body.fixtures:
+                        shape = fixture.shape
+                        if shape is not None:
+                            vertices = [(body.transform * v) * self.ppm for v in shape.vertices]
+                            vertices = [(v[0], self.screen_height - v[1]) for v in vertices]
+                            pygame.draw.polygon(self.screen, self.get_color_for_object(body), vertices)
                         # pygame.draw.polygon(self.screen, self.colors[body.type], vertices)
 
-            self.world.Step(self.time_step, 10, 10)
-            # Flip the screen and try to keep at the target FPS
-            pygame.display.flip()
-            self.get_image()
-            self.clock.tick(self.target_fps)
+                for body in self.agent_target_pair:
+                    # The body gives us the position and angle of its shapes
+                    for fixture in body.fixtures:
+                        shape = fixture.shape
+                        if shape is not None:
+                            vertices = [(body.transform * v) * self.ppm for v in shape.vertices]
+                            vertices = [(v[0], self.screen_height - v[1]) for v in vertices]
+                            pygame.draw.polygon(self.screen, self.get_color_for_object(body), vertices)
+                            # pygame.draw.polygon(self.screen, self.colors[body.type], vertices)
+
+                self.world.Step(self.time_step, 10, 10)
+                # Flip the screen and try to keep at the target FPS
+                pygame.display.flip()
+                self.get_image()
+                self.clock.tick(self.target_fps)
+            else:
+                print("dropping update")
 
     def get_color_for_object(self, box_object):
         return get_color_for_code(box_object.userData.get_obj_code())
@@ -188,6 +199,6 @@ class viz_screen:
         return self.reached_target, self.collision_detected
 
     def change_game_background_intensity(self, q_val):
-        current_color = (q_val/2, 0, 0)
+        current_color = (q_val / 2, 0, 0)
         self.screen.fill(current_color)
         pygame.display.update()
